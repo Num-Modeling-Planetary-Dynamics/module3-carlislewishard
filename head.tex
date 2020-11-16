@@ -1,0 +1,22 @@
+\usepackage{framed}
+\usepackage{quoting}
+\usepackage{cancel}
+\usepackage[format=plain,
+            labelfont={it},
+            textfont=it]{caption}
+
+\definecolor{bgcolor}{HTML}{DADADA}
+\colorlet{shadecolor}{bgcolor}
+% define a new environment shadedquotation. You can change leftmargin and
+% rightmargin as you wish.
+\newenvironment{shadedquotation}
+ {\begin{shaded*}
+  \quoting[leftmargin=1em, rightmargin=0pt, vskip=0pt, font=itshape]
+ }
+ {\endquoting
+ \end{shaded*}
+ }
+
+%
+\def\quote{\shadedquotation}
+\def\endquote{\endshadedquotation}
