@@ -3,8 +3,10 @@ program xv2el
    implicit none
    integer, parameter            :: P = real64
    real(P)                       :: R_norm, V_norm, h_norm, Rdot, PI, G, msun, mu
+   real(P)                       :: a, e, inc, omega, varpi, f
    real(P)                       :: sin_omega, cos_omega, sin_varpi, cos_varpi, sin_f, cos_f
    real(P), dimension(3)         :: R, V, h
+   real(P), dimension(1001)      :: t, px, py, pz, vx, vy, vz
    real(P), dimension(1001,7)    :: input_data, output_data
    integer                       :: count_start, count_rate, count_end, i, j
    character(len = 200)          :: file_in, file_out, path
@@ -14,8 +16,8 @@ program xv2el
    path = '/Users/carlislewishard/Documents/Classes/Year_4/Numerical_Dynamics/Module3/&
    module3-carlislewishard/data/'
 
-   file_in = trim(path) // trim('id000010-XV.csv')
-   file_out = trim(path) // trim('id000010-EL.csv')
+   file_in = trim(path) // trim('id000004-XV.csv')
+   file_out = trim(path) // trim('id000004-EL.csv')
    open(unit = 11, file = file_in, status = 'old')
    open(unit = 12, file = file_out, status = 'replace')
    read(11,*) !Skip the first line
@@ -34,20 +36,27 @@ program xv2el
    msun = 1.0_P
    mu = G * msun
 
+   !Name the input data
+   t(:) = input_data(:,1)
+   px(:) = input_data(:,2)
+   py(:) = input_data(:,3)
+   pz(:) = input_data(:,4)
+   vx(:) = input_data(:,5)
+   vy(:) = input_data(:,6)
+   vz(:) = input_data(:,7)
+
    do j = 1,1001  
-      !Copy t (time)
-      output_data(j,1) = input_data(j,1)
 
       !Calculate R 
-      R(1) = input_data(j,2) !AU
-      R(2) = input_data(j,3) !AU
-      R(3) = input_data(j,4) !AU
+      R(1) = px(j) !AU
+      R(2) = py(j) !AU
+      R(3) = pz(j) !AU
       R_norm = norm2(R(:)) 
 
       !Calculate V 
-      V(1) = input_data(j,5) * 365.25_P !AU/day -> AU/year
-      V(2) = input_data(j,6) * 365.25_P !AU/day -> AU/year
-      V(3) = input_data(j,7) * 365.25_P !AU/day -> AU/year
+      V(1) = vx(j) * 365.25_P !AU/day -> AU/year
+      V(2) = vy(j) * 365.25_P !AU/day -> AU/year
+      V(3) = vz(j) * 365.25_P !AU/day -> AU/year
       V_norm = norm2(V(:))
 
       !Calculate h
@@ -60,28 +69,37 @@ program xv2el
       Rdot = sign(V_norm**2 - (h_norm / R_norm)**2, dot_product(R(:), V(:)))
 
       !Calculate a (semi-major axis)
-      output_data(j,2) = ((2.0_P / R_norm) - (V_norm**2 / mu))**(-1)
+      a = ((2.0_P / R_norm) - (V_norm**2 / mu))**(-1)
 
       !Calculate e (eccentricity)
-      output_data(j,3) = sqrt(1.0_P - (h_norm**2 / (output_data(j,2) * mu)))
+      e = sqrt(1.0_P - (h_norm**2 / (a * mu)))
 
       !Calculate inc (inclination)
-      output_data(j,4) = acos(h(3) / h_norm)
+      inc = acos(h(3) / h_norm)
 
       !Calculate omega (longitude of the ascending note)
-      sin_omega = sign(h(1), h(3)) / (h_norm * sin(output_data(j,4)))
-      cos_omega = sign(-h(2), h(3)) / (h_norm * sin(output_data(j,4)))
-      output_data(j,5) = atan2(sin_omega, cos_omega)
+      sin_omega = sign(h(1), h(3)) / (h_norm * sin(inc))
+      cos_omega = sign(-h(2), h(3)) / (h_norm * sin(inc))
+      omega = atan2(sin_omega, cos_omega)
 
       !Calculate f (true anomaly)
-      sin_f = output_data(j,2) * (1.0_P - output_data(j,3)**2) / (h_norm * output_data(j,3)) * Rdot
-      cos_f = ((output_data(j,2) * (1.0_P - output_data(j,3)**2) / R_norm) - 1.0_P) / output_data(j,3)
-      output_data(j,7) = atan2(sin_f, cos_f)
+      sin_f = a * (1.0_P - e**2) / (h_norm * e) * Rdot
+      cos_f = ((a * (1.0_P - e**2) / R_norm) - 1.0_P) / e
+      f = atan2(sin_f, cos_f)
 
       !Calculate varpi (argument of periapsis)
-      sin_varpi = R(3) / (R_norm * sin(output_data(j,4)))
-      cos_varpi = ((R(1) / R_norm) + (sin(output_data(j,5)) * sin_varpi * cos(output_data(j,4)))) / cos(output_data(j,5))
-      output_data(j,6) = atan2(sin_varpi, cos_varpi) - output_data(j,5)
+      sin_varpi = R(3) / (R_norm * sin(inc))
+      cos_varpi = ((R(1) / R_norm) + (sin(inc) * sin_varpi * cos(inc))) / cos(omega)
+      varpi = atan2(sin_varpi, cos_varpi) - omega
+
+      !Name the output data
+      output_data(j,1) = t(j)
+      output_data(j,2) = a
+      output_data(j,3) = e
+      output_data(j,4) = inc
+      output_data(j,5) = omega
+      output_data(j,6) = varpi
+      output_data(j,7) = f
 
       !Write to the output file
       write(12,fmt) output_data(j,:)
