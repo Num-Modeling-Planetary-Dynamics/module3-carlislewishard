@@ -2,7 +2,7 @@ program xv2el
    use, intrinsic                :: iso_fortran_env
    implicit none
    integer, parameter            :: P = real64
-   real(P)                       :: R_norm, V_norm, h_norm, Rdot
+   real(P)                       :: R_norm, V_norm, h_norm, Rdot, PI, G, msun, mu
    real(P)                       :: sin_omega, cos_omega, sin_varpi, cos_varpi, sin_f, cos_f
    real(P), dimension(3)         :: R, V, h
    real(P), dimension(1001,7)    :: input_data, output_data
@@ -14,8 +14,8 @@ program xv2el
    path = '/Users/carlislewishard/Documents/Classes/Year_4/Numerical_Dynamics/Module3/&
    module3-carlislewishard/data/'
 
-   file_in = trim(path) // trim('id000004-XV.csv')
-   file_out = trim(path) // trim('id000004-EL.csv')
+   file_in = trim(path) // trim('id000010-XV.csv')
+   file_out = trim(path) // trim('id000010-EL.csv')
    open(unit = 11, file = file_in, status = 'old')
    open(unit = 12, file = file_out, status = 'replace')
    read(11,*) !Skip the first line
@@ -28,21 +28,27 @@ program xv2el
    !Write the output header
    write(12,*) "t,a,e,inc,omega,varpi,f"
 
+   !Calculate the constants and define the output units
+   PI = 4.0_P * atan(1.0_P)
+   G = 4.0_P * PI**2 
+   msun = 1.0_P
+   mu = G * msun
+
    do j = 1,1001  
       !Copy t (time)
       output_data(j,1) = input_data(j,1)
 
       !Calculate R 
-      R(1) = input_data(j,2)
-      R(2) = input_data(j,3)
-      R(3) = input_data(j,4)
+      R(1) = input_data(j,2) !AU
+      R(2) = input_data(j,3) !AU
+      R(3) = input_data(j,4) !AU
       R_norm = norm2(R(:)) 
 
       !Calculate V 
-      V(1) = input_data(j,5)
-      V(2) = input_data(j,6)
-      V(3) = input_data(j,7)
-      V_norm = norm2(V(:)) !/ 365.25_P !AU/days
+      V(1) = input_data(j,5) * 365.25_P !AU/day -> AU/year
+      V(2) = input_data(j,6) * 365.25_P !AU/day -> AU/year
+      V(3) = input_data(j,7) * 365.25_P !AU/day -> AU/year
+      V_norm = norm2(V(:))
 
       !Calculate h
       h(1) = (R(2) * V(3)) - (R(3) * V(2))
@@ -54,10 +60,10 @@ program xv2el
       Rdot = sign(V_norm**2 - (h_norm / R_norm)**2, dot_product(R(:), V(:)))
 
       !Calculate a (semi-major axis)
-      output_data(j,2) = ((2.0_P / R_norm) - V_norm**2)**(-1)
+      output_data(j,2) = ((2.0_P / R_norm) - (V_norm**2 / mu))**(-1)
 
       !Calculate e (eccentricity)
-      output_data(j,3) = sqrt(1.0_P - (h_norm**2 / output_data(j,2)))
+      output_data(j,3) = sqrt(1.0_P - (h_norm**2 / (output_data(j,2) * mu)))
 
       !Calculate inc (inclination)
       output_data(j,4) = acos(h(3) / h_norm)
