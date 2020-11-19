@@ -16,8 +16,8 @@ program el2xv
    path = '/Users/carlislewishard/Documents/Classes/Year_4/Numerical_Dynamics/Module3/&
    module3-carlislewishard/data/'
 
-   file_in = trim(path) // trim('id000010-EL.csv')
-   file_out = trim(path) // trim('id000010-XV-new.csv')
+   file_in = trim(path) // trim('id000004-EL.csv')
+   file_out = trim(path) // trim('id000004-XV-new.csv')
    open(unit = 11, file = file_in, status = 'old')
    open(unit = 12, file = file_out, status = 'replace')
    read(11,*) !Skip the first line
@@ -45,32 +45,33 @@ program el2xv
    varpi(:) = input_data(:,6)
    f(:) = input_data(:,7)
 
-   do j = 1,1001  
+   do j = 1,1001 
 
       !Calculate Rx, Ry, Rz
-      R_norm = (input_data(j,2) * (1.0_P - input_data(j,3)**2)) / (input_data(j,3) * cos(input_data(j,7)) + 1.0_P)
-      px = R_norm * ((cos(omega(j)) * cos(varpi(j) + f(j))) - (sin(omega(j)) * sin(varpi(j) + f(j)) * cos(inc(j))) 
-      py = R_norm * ((sin(omega(j)) * cos(varpi(j) + f(j))) + (cos(omega(j)) * sin(varpi(j) + f(j)) * cos(inc(j))) 
+      R_norm = (a(j) * (1.0_P - e(j)**2)) / (e(j) * cos(f(j)) + 1.0_P)
+      px = R_norm * ((cos(omega(j)) * cos(varpi(j) + f(j))) - (sin(omega(j)) * sin(varpi(j) + f(j)) * cos(inc(j)))) 
       pz = R_norm * sin(varpi(j) + f(j)) * sin(inc(j))
+      py = sqrt(R_norm**2 - px**2 - pz**2)
 
       !Calculate hx, hy, hz
       h_norm = sqrt(mu * a(j) * (1.0_P - e(j)**2))
       h(3) = h_norm * cos(inc(j))
       h(1) = sign(h_norm * sin(inc(j)) * sin(omega(j)), h(3))
-      h(2) = -sign(h_norm * sin(inc(j)) * cos(omega(j)), h(3))
-   
+      h(2) = sign(h_norm * sin(inc(j)) * cos(omega(j)), h(3))
 
-
-
+      !Calculate vx, vy, vz
+      vz = (h(1) + (py * h(2) / px)) / (px - (h(3) / px) - py)
+      vx = (h(2) + (vz * px)) / pz
+      vy = (h(3) + (vx * py)) / px
 
       !Name the output data
       output_data(j,1) = t(j)
       output_data(j,2) = px
       output_data(j,3) = py
       output_data(j,4) = pz
-      output_data(j,5) = vx
-      output_data(j,6) = vy
-      output_data(j,7) = vz
+      output_data(j,5) = vx / 365.25_P !AU/year -> AU/day
+      output_data(j,6) = vy / 365.25_P !AU/year -> AU/day
+      output_data(j,7) = vz / 365.25_P !AU/year -> AU/day
 
       !Write to the output file
       write(12,fmt) output_data(j,:)
