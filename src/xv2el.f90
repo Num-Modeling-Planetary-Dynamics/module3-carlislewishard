@@ -16,8 +16,8 @@ program xv2el
    path = '/Users/carlislewishard/Documents/Classes/Year_4/Numerical_Dynamics/Module3/&
    module3-carlislewishard/data/'
 
-   file_in = trim(path) // trim('id000004-XV.csv')
-   file_out = trim(path) // trim('id000004-EL.csv')
+   file_in = trim(path) // trim('id000010-XV.csv')
+   file_out = trim(path) // trim('id000010-EL.csv')
    open(unit = 11, file = file_in, status = 'old')
    open(unit = 12, file = file_out, status = 'replace')
    read(11,*) !Skip the first line
@@ -83,14 +83,14 @@ program xv2el
       omega = atan2(sin_omega, cos_omega)
 
       !Calculate f (true anomaly)
-      sin_f = a * (1.0_P - e**2) / (h_norm * e) * Rdot
+      sin_f = (a * (1.0_P - e**2) / (h_norm * e)) * Rdot
       cos_f = ((a * (1.0_P - e**2) / R_norm) - 1.0_P) / e
       f = atan2(sin_f, cos_f)
 
       !Calculate varpi (argument of periapsis)
-      sin_varpi = R(3) / (R_norm * sin(inc))
-      cos_varpi = ((R(1) / R_norm) + (sin(inc) * sin_varpi * cos(inc))) / cos(omega)
-      varpi = atan2(sin_varpi, cos_varpi) - omega
+      sin_varpi = R(3) / (R_norm * sin(inc)) 
+      cos_varpi = ((R(1) / R_norm) + (sin(omega) * sin_varpi * cos(inc))) / cos(omega)
+      varpi = atan2(sin_varpi, cos_varpi) - f
 
       !Name the output data
       output_data(j,1) = t(j)
