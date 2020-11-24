@@ -2,11 +2,10 @@ program el2xv
    use, intrinsic                :: iso_fortran_env
    implicit none
    integer, parameter            :: P = real64
-   real(P)                       :: R_norm, V_norm, h_norm, Rdot, PI, G, msun, mu
-   real(P)                       :: px, py, pz, vx, vy, vz
-   real(P)                       :: sin_omega, cos_omega, sin_varpi, cos_varpi, sin_f, cos_f
+   real(P)                       :: R_norm, V_norm, h_norm, PI, G, msun, mu
+   real(P)                       :: px, py, pz, vx, vy, vz, rdot
    real(P), dimension(3)         :: R, V, h
-   real(P), dimension(1001)      :: t, a, e, inc, omega, varpi, f
+   real(P), dimension(1001)      :: t, a, e, inc, omega, varpi, f, littleomega
    real(P), dimension(1001,7)    :: input_data, output_data
    integer                       :: count_start, count_rate, count_end, i, j
    character(len = 200)          :: file_in, file_out, path
@@ -16,8 +15,8 @@ program el2xv
    path = '/Users/carlislewishard/Documents/Classes/Year_4/Numerical_Dynamics/Module3/&
    module3-carlislewishard/data/'
 
-   file_in = trim(path) // trim('id000004-EL.csv')
-   file_out = trim(path) // trim('id000004-XV-new.csv')
+   file_in = trim(path) // trim('id000010-EL.csv')
+   file_out = trim(path) // trim('id000010-XV-new.csv')
    open(unit = 11, file = file_in, status = 'old')
    open(unit = 12, file = file_out, status = 'replace')
    read(11,*) !Skip the first line
@@ -47,11 +46,16 @@ program el2xv
 
    do j = 1,1001 
 
+      !Calculate littleomega
+      littleomega(j) = varpi(j) - omega(j)
+
       !Calculate Rx, Ry, Rz
-      R_norm = (a(j) * (1.0_P - e(j)**2)) / (e(j) * cos(f(j)) + 1.0_P)
-      px = R_norm * ((cos(omega(j)) * cos(varpi(j) + f(j))) - (sin(omega(j)) * sin(varpi(j) + f(j)) * cos(inc(j)))) 
-      pz = R_norm * sin(varpi(j) + f(j)) * sin(inc(j))
-      py = sqrt(R_norm**2 - px**2 - pz**2)
+      R_norm = (a(j) * (1.0_P - e(j)**2)) / ((e(j) * cos(f(j))) + 1.0_P)
+      rdot = (a(j) * e(j) * sin(f(j))) / sqrt(1.0_P - e(j)**2)
+
+      px = R_norm * ((cos(omega(j)) * cos(littleomega(j) + f(j))) - (sin(omega(j)) * sin(littleomega(j) + f(j)) * cos(inc(j)))) 
+      py = R_norm * ((sin(omega(j)) * cos(littleomega(j) + f(j))) + (cos(omega(j)) * sin(littleomega(j) + f(j)) * cos(inc(j))))
+      pz = R_norm * sin(littleomega(j) + f(j)) * sin(inc(j))
 
       !Calculate hx, hy, hz
       h_norm = sqrt(mu * a(j) * (1.0_P - e(j)**2))
@@ -60,18 +64,26 @@ program el2xv
       h(2) = sign(h_norm * sin(inc(j)) * cos(omega(j)), h(3))
 
       !Calculate vx, vy, vz
-      vz = (h(1) + (py * h(2) / px)) / (px - (h(3) / px) - py)
-      vx = (h(2) + (vz * px)) / pz
-      vy = (h(3) + (vx * py)) / px
+      V_norm = sqrt(mu * ((2.0_P / R_norm) - (1.0_P / a(j)))) / 365.25_P
+
+      vx = ((rdot * cos(omega(j)) * cos(littleomega(j) + f(j))) - &
+         (rdot * sin(omega(j)) * sin(littleomega(j) + f(j)) * cos(inc(j)))) / 365.25_P
+      vy = ((rdot * sin(omega(j)) * cos(littleomega(j) + f(j))) + &
+         (rdot * cos(omega(j)) * sin(littleomega(j) + f(j)) * cos(inc(j)))) / 365.25_P
+      vz = (rdot * sin(littleomega(j) + f(j)) * sin(inc(j))) / 365.25_P
+
+      if (j == 1) then
+         write(*,*) 'el2xv', vx, vy, vz, V_norm
+      end if 
 
       !Name the output data
       output_data(j,1) = t(j)
       output_data(j,2) = px
       output_data(j,3) = py
       output_data(j,4) = pz
-      output_data(j,5) = vx / 365.25_P !AU/year -> AU/day
-      output_data(j,6) = vy / 365.25_P !AU/year -> AU/day
-      output_data(j,7) = vz / 365.25_P !AU/year -> AU/day
+      output_data(j,5) = vx
+      output_data(j,6) = vy
+      output_data(j,7) = vz
 
       !Write to the output file
       write(12,fmt) output_data(j,:)

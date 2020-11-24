@@ -3,8 +3,8 @@ program xv2el
    implicit none
    integer, parameter            :: P = real64
    real(P)                       :: R_norm, V_norm, h_norm, Rdot, PI, G, msun, mu
-   real(P)                       :: a, e, inc, omega, varpi, f
-   real(P)                       :: sin_omega, cos_omega, sin_varpi, cos_varpi, sin_f, cos_f
+   real(P)                       :: a, e, inc, omega, varpi, f, littleomega
+   real(P)                       :: sin_omega, cos_omega, sin_littleomega, cos_littleomega, sin_f, cos_f
    real(P), dimension(3)         :: R, V, h
    real(P), dimension(1001)      :: t, px, py, pz, vx, vy, vz
    real(P), dimension(1001,7)    :: input_data, output_data
@@ -65,8 +65,12 @@ program xv2el
       h(3) = (R(1) * V(2)) - (R(2) * V(1))
       h_norm = norm2(h(:))
 
+      if (j == 1) then
+         write(*,*) 'xv2el', V(1), V(2), V(3), V_norm
+      end if 
+
       !Calculate Rdot
-      Rdot = sign(V_norm**2 - (h_norm / R_norm)**2, dot_product(R(:), V(:)))
+      Rdot = sign(sqrt(V_norm**2 - (h_norm / R_norm)**2), dot_product(R(:), V(:)))
 
       !Calculate a (semi-major axis)
       a = ((2.0_P / R_norm) - (V_norm**2 / mu))**(-1)
@@ -79,18 +83,19 @@ program xv2el
 
       !Calculate omega (longitude of the ascending note)
       sin_omega = sign(h(1), h(3)) / (h_norm * sin(inc))
-      cos_omega = sign(-h(2), h(3)) / (h_norm * sin(inc))
+      cos_omega = - sign(h(2), h(3)) / (h_norm * sin(inc))
       omega = atan2(sin_omega, cos_omega)
 
       !Calculate f (true anomaly)
-      sin_f = (a * (1.0_P - e**2) / (h_norm * e)) * Rdot
-      cos_f = ((a * (1.0_P - e**2) / R_norm) - 1.0_P) / e
+      sin_f = ((a * (1.0_P - e**2)) / (h_norm * e)) * Rdot
+      cos_f = (((a * (1.0_P - e**2)) / R_norm) - 1.0_P) / e
       f = atan2(sin_f, cos_f)
 
       !Calculate varpi (argument of periapsis)
-      sin_varpi = R(3) / (R_norm * sin(inc)) 
-      cos_varpi = ((R(1) / R_norm) + (sin(omega) * sin_varpi * cos(inc))) / cos(omega)
-      varpi = atan2(sin_varpi, cos_varpi) - f
+      sin_littleomega = R(3) / (R_norm * sin(inc)) 
+      cos_littleomega = ((R(1) / R_norm) + (sin(omega) * sin_littleomega * cos(inc))) / cos(omega)
+      littleomega = atan2(sin_littleomega, cos_littleomega) - f
+      varpi = omega + littleomega
 
       !Name the output data
       output_data(j,1) = t(j)
