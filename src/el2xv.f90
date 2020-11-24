@@ -64,13 +64,13 @@ program el2xv
       h(2) = sign(h_norm * sin(inc(j)) * cos(omega(j)), h(3))
 
       !Calculate vx, vy, vz
-      V_norm = sqrt(mu * ((2.0_P / R_norm) - (1.0_P / a(j)))) / 365.25_P
+      V_norm = sqrt(mu * ((2.0_P / R_norm) - (1.0_P / a(j))))
 
       vx = ((rdot * cos(omega(j)) * cos(littleomega(j) + f(j))) - &
-         (rdot * sin(omega(j)) * sin(littleomega(j) + f(j)) * cos(inc(j)))) / 365.25_P
+         (rdot * sin(omega(j)) * sin(littleomega(j) + f(j)) * cos(inc(j)))) 
       vy = ((rdot * sin(omega(j)) * cos(littleomega(j) + f(j))) + &
-         (rdot * cos(omega(j)) * sin(littleomega(j) + f(j)) * cos(inc(j)))) / 365.25_P
-      vz = (rdot * sin(littleomega(j) + f(j)) * sin(inc(j))) / 365.25_P
+         (rdot * cos(omega(j)) * sin(littleomega(j) + f(j)) * cos(inc(j)))) 
+      vz = (rdot * sin(littleomega(j) + f(j)) * sin(inc(j))) 
 
       if (j == 1) then
          write(*,*) 'el2xv', vx, vy, vz, V_norm
@@ -81,9 +81,9 @@ program el2xv
       output_data(j,2) = px
       output_data(j,3) = py
       output_data(j,4) = pz
-      output_data(j,5) = vx
-      output_data(j,6) = vy
-      output_data(j,7) = vz
+      output_data(j,5) = vx / 365.25_P
+      output_data(j,6) = vy / 365.25_P
+      output_data(j,7) = vz / 365.25_P
 
       !Write to the output file
       write(12,fmt) output_data(j,:)
