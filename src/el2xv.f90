@@ -51,7 +51,7 @@ program el2xv
 
       !Calculate Rx, Ry, Rz
       R_norm = (a(j) * (1.0_P - e(j)**2)) / ((e(j) * cos(f(j))) + 1.0_P)
-      rdot = (a(j) * e(j) * sin(f(j))) / sqrt(1.0_P - e(j)**2)
+      rdot = (a(j) * e(j) * sin(f(j))) / sqrt(1.0_P - e(j)**2) !THIS IS WRONG eq 2.31
 
       px = R_norm * ((cos(omega(j)) * cos(littleomega(j) + f(j))) - (sin(omega(j)) * sin(littleomega(j) + f(j)) * cos(inc(j)))) 
       py = R_norm * ((sin(omega(j)) * cos(littleomega(j) + f(j))) + (cos(omega(j)) * sin(littleomega(j) + f(j)) * cos(inc(j))))
@@ -66,14 +66,20 @@ program el2xv
       !Calculate vx, vy, vz
       V_norm = sqrt(mu * ((2.0_P / R_norm) - (1.0_P / a(j))))
 
+      !THESE ARE WRONG!
+
       vx = ((rdot * cos(omega(j)) * cos(littleomega(j) + f(j))) - &
          (rdot * sin(omega(j)) * sin(littleomega(j) + f(j)) * cos(inc(j)))) 
       vy = ((rdot * sin(omega(j)) * cos(littleomega(j) + f(j))) + &
          (rdot * cos(omega(j)) * sin(littleomega(j) + f(j)) * cos(inc(j)))) 
-      vz = (rdot * sin(littleomega(j) + f(j)) * sin(inc(j))) 
+      vz = (rdot * sin(littleomega(j) + f(j)) * sin(inc(j)))
+
+      !THESE ARE WRONG! 
 
       if (j == 1) then
+         write(*,*) 'el2xv', px, py, pz, R_norm
          write(*,*) 'el2xv', vx, vy, vz, V_norm
+         write(*,*) 'el2xv', rdot
       end if 
 
       !Name the output data

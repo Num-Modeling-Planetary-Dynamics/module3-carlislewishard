@@ -65,10 +65,6 @@ program xv2el
       h(3) = (R(1) * V(2)) - (R(2) * V(1))
       h_norm = norm2(h(:))
 
-      if (j == 1) then
-         write(*,*) 'xv2el', V(1), V(2), V(3), V_norm
-      end if 
-
       !Calculate Rdot
       Rdot = sign(sqrt(V_norm**2 - (h_norm / R_norm)**2), dot_product(R(:), V(:)))
 
@@ -90,6 +86,12 @@ program xv2el
       sin_f = ((a * (1.0_P - e**2)) / (h_norm * e)) * Rdot
       cos_f = (((a * (1.0_P - e**2)) / R_norm) - 1.0_P) / e
       f = atan2(sin_f, cos_f)
+
+      if (j == 1) then
+         write(*,*) 'xv2el', R(1), R(2), R(3), R_norm
+         write(*,*) 'xv2el', V(1), V(2), V(3), V_norm
+         write(*,*) 'xv2el', Rdot
+      end if 
 
       !Calculate varpi (argument of periapsis)
       sin_littleomega = R(3) / (R_norm * sin(inc)) 
