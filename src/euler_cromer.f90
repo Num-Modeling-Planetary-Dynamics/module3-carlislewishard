@@ -5,8 +5,6 @@ program euler_cromer
    integer                       :: dt_max, count_start, count_rate, count_end, i
    real(P)                       :: PI, G, m_sun, m_n, m_p, h, tmax, t
    real(P)                       :: mag_r_n_0, mag_v_n_0, mag_r_p_0, mag_v_p_0
-   real(P)                       :: energy_n_0, angmom_n_0, energy_p_0, angmom_p_0
-   real(P)                       :: energy_n, energy_p, angmom_n, angmom_p
    real(P), dimension(7)         :: n_input_data, p_input_data
    real(P)                       :: r_n_x_old, r_n_y_old, r_n_z_old, v_n_x_old, v_n_y_old, v_n_z_old
    real(P)                       :: r_p_x_old, r_p_y_old, r_p_z_old, v_p_x_old, v_p_y_old, v_p_z_old
@@ -44,8 +42,8 @@ program euler_cromer
    close(11)
    close(12)
 
-   write(13,*) "t,px,py,pz,vx,vy,vz,energy,angmom"
-   write(14,*) "t,px,py,pz,vx,vy,vz,energy,angmom"
+   write(13,*) "t,px,py,pz,vx,vy,vz"!,energy,angmom"
+   write(14,*) "t,px,py,pz,vx,vy,vz"!,energy,angmom"
 
    PI = 4.0_P * atan(1.0_P)                                                               !pi
    G = 4.0_P * PI**2                                                                      !gravitational constant in solar masses
@@ -63,21 +61,9 @@ program euler_cromer
    mag_r_p_0 = sqrt(p_input_data(2)**2 + p_input_data(3)**2 + p_input_data(4)**2)         !|r| for pluto at t=0
    mag_v_p_0 = sqrt(p_input_data(5)**2 + p_input_data(6)**2 + p_input_data(7)**2)         !|v| for pluto at t=0
 
-   energy_n_0 = 0.5_P * mag_v_n_0**2 - ((G * m_sun) / mag_r_n_0)                          !energy from vis viva for neptune at t=0
-   angmom_n_0 = (n_input_data(3) * n_input_data(7) - n_input_data(4) * n_input_data(6)) + &
-      (n_input_data(4) * n_input_data(5) - n_input_data(2) * n_input_data(7)) + &
-      (n_input_data(2) * n_input_data(6) - n_input_data(3) * n_input_data(5))             !angmom from r cros v for neptune at t=0
-
-   energy_p_0 = 0.5_P * mag_v_p_0**2 - ((G * m_sun) / mag_r_p_0)                          !energy from vis viva for pluto at t=0
-   angmom_p_0 = (p_input_data(3) * p_input_data(7) - p_input_data(4) * p_input_data(6)) + &
-      (p_input_data(4) * p_input_data(5) - p_input_data(2) * p_input_data(7)) + &
-      (p_input_data(2) * p_input_data(6) - p_input_data(3) * p_input_data(5))             !angmom from r cros v for pluto at t=0
-
    !Write the t=0 values to the output files
-   write(13,fmt) 0.0, n_input_data(2), n_input_data(3), n_input_data(4), &
-      n_input_data(5), n_input_data(6), n_input_data(7), energy_n_0, angmom_n_0
-   write(14,fmt) 0.0, p_input_data(2), p_input_data(3), p_input_data(4), &
-      p_input_data(5), p_input_data(6), p_input_data(7), energy_p_0, angmom_p_0
+   write(13,fmt) 0.0, n_input_data(2), n_input_data(3), n_input_data(4), n_input_data(5), n_input_data(6), n_input_data(7)
+   write(14,fmt) 0.0, p_input_data(2), p_input_data(3), p_input_data(4), p_input_data(5), p_input_data(6), p_input_data(7)
 
    !Reassign the t=0 values to be the old values
    r_n_x_old = n_input_data(2)
@@ -142,27 +128,14 @@ program euler_cromer
       mag_v_n = sqrt(v_n_x_new**2 + v_n_y_new**2 + v_n_z_new**2)
       mag_v_p = sqrt(v_p_x_new**2 + v_p_y_new**2 + v_p_z_new**2)
 
-      !Calculate the energy of each body and the sun
-      energy_n = 0.5_P * mag_v_n**2 - ((G * m_sun) / mag_r_n)
-      energy_p = 0.5_P * mag_v_p**2 - ((G * m_sun) / mag_r_p)
-
-      !Calculate the angular momentum of each body and the sun
-      angmom_n = (r_n_y_new * v_n_z_new - r_n_z_new * v_n_y_new) + &
-         (r_n_z_new * v_n_x_new - r_n_x_new * v_n_z_new) + &
-         (r_n_x_new * v_n_y_new - r_n_y_new * v_n_x_new) 
-
-      angmom_p = (r_p_y_new * v_p_z_new - r_p_z_new * v_p_y_new) + &
-         (r_p_z_new * v_p_x_new - r_p_x_new * v_p_z_new) + &
-         (r_p_x_new * v_p_y_new - r_p_y_new * v_p_x_new) 
-
       !Calculate the time
       t = i * h
       write(*,*) "Time = ", t
 
       if (mod(t, 100.0_P) == 0) then
          !Write the new values to the output file
-         write(13,fmt) t, r_n_x_old, r_n_y_old, r_n_z_old, v_n_x_old, v_n_y_old, v_n_z_old, energy_n, angmom_n
-         write(14,fmt) t, r_p_x_old, r_p_y_old, r_p_z_old, v_p_x_old, v_p_y_old, v_p_z_old, energy_p, angmom_p
+         write(13,fmt) t, r_n_x_old, r_n_y_old, r_n_z_old, v_n_x_old, v_n_y_old, v_n_z_old
+         write(14,fmt) t, r_p_x_old, r_p_y_old, r_p_z_old, v_p_x_old, v_p_y_old, v_p_z_old
       end if
 
       !Reassign the new values to be the old values for the next step
