@@ -55,6 +55,14 @@ program euler_cromer
    tmax = 100000.0_P                                                                      !total simulation time in years
    dt_max = int(tmax / h)                                                                 !total number of timesteps
 
+   n_input_data(5) = n_input_data(5) * 365.25_P                                           !AU/day -> AU/year
+   n_input_data(6) = n_input_data(6) * 365.25_P                                           !AU/day -> AU/year
+   n_input_data(7) = n_input_data(7) * 365.25_P                                           !AU/day -> AU/year
+
+   p_input_data(5) = p_input_data(5) * 365.25_P                                           !AU/day -> AU/year
+   p_input_data(6) = p_input_data(6) * 365.25_P                                           !AU/day -> AU/year
+   p_input_data(7) = p_input_data(7) * 365.25_P                                           !AU/day -> AU/year
+
    mag_r_n_0 = sqrt(n_input_data(2)**2 + n_input_data(3)**2 + n_input_data(4)**2)         !|r| for neptune at t=0
    mag_v_n_0 = sqrt(n_input_data(5)**2 + n_input_data(6)**2 + n_input_data(7)**2)         !|v| for neptune at t=0
 
