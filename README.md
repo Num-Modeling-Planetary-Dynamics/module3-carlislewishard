@@ -85,8 +85,6 @@ $$f\left(\mathbf{x}\right)=\begin{bmatrix}
 \end{bmatrix}
 $$
 
-We can choose to work in a unit system in which $\mu=1$. In this unit system, consider an elliptical orbit with semimajor axis $a=1$ and $e=0.3$, and choose initial conditions $\left(r_{x,0}, r_{y,0}, v_{x,0}, v_{y,0}\right)$ such that the body is at the periapsis of the orbit.
-
 Given initial values for $\mathbf{x}_0$, and $\mathbf{y}_0$, as well as a step-size $h$ (aka time step, or $\Delta t$), the above system of equations can be solved numerically to find $\mathbf{x}_n$, and $\mathbf{y}_n$ where $t_n = t_0 + nh$. 
 
 For this problem, you will implement the *Leapfrog method*. In the "drift-kick-drift" form, the Leapfrog method can be written as:
