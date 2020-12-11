@@ -42,8 +42,8 @@ program euler_cromer
    close(11)
    close(12)
 
-   write(13,*) "t,px,py,pz,vx,vy,vz"!,energy,angmom"
-   write(14,*) "t,px,py,pz,vx,vy,vz"!,energy,angmom"
+   write(13,*) "t,px,py,pz,vx,vy,vz"
+   write(14,*) "t,px,py,pz,vx,vy,vz"
 
    PI = 4.0_P * atan(1.0_P)                                                               !pi
    G = 4.0_P * PI**2                                                                      !gravitational constant in solar masses
@@ -140,6 +140,7 @@ program euler_cromer
       t = i * h
       write(*,*) "Time = ", t
 
+      !Check if this timestep is a multiple of 100 (output cadence)
       if (mod(t, 100.0_P) == 0) then
          !Write the new values to the output file
          write(13,fmt) t, r_n_x_old, r_n_y_old, r_n_z_old, v_n_x_old, v_n_y_old, v_n_z_old
