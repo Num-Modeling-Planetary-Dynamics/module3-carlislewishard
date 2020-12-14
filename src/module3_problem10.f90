@@ -51,11 +51,11 @@ program module3_problem10
    G = 4.0_P * PI**2                                                                      !gravitational constant in solar masses
    m_sun = 1.0_P
    m_nep = 0.00005149_P
-   m_plu = 6.58086572E-9_P                                                                          !mass of the sun in solar masses     
+   m_plu = 6.58086572E-9_P                                                                !mass of the sun in solar masses     
    m_sys = m_sun + m_nep + m_plu
 
    h = 0.008_P                                                                            !timestep in years
-   tmax = 100000.0_P                                                                     !total simulation time in years
+   tmax = 100000.0_P                                                                      !total simulation time in years
    dt_max = int(tmax / h)                                                                 !total number of timesteps
 
    input_data(:,5) = input_data(:,5) * 365.25_P                                           !AU/day -> AU/year
@@ -90,6 +90,7 @@ program module3_problem10
       t = i * h
       t_half = 0.5_P * t
 
+      !Switch from XV->EL
       nep_r_norm = sqrt(nep_old(1)**2 + nep_old(2)**2 + nep_old(3)**2)
       nep_v_norm = sqrt(nep_old(4)**2 + nep_old(5)**2 + nep_old(6)**2)
       nep_h_norm = sqrt(((nep_old(2) * nep_old(6)) - (nep_old(3) * nep_old(5)))**2 &
@@ -141,10 +142,10 @@ program module3_problem10
          plu_del3 = - plu_func / (plu_func_1d + (0.5_P * plu_del2 * plu_func_2d) &
             + ((1.0_P/6.0_P) * plu_del2**2.0_P * plu_func_3d))
 
-         !Calculate the eccentric anomaly
-         nep_E_val(j+1) = (nep_E_val(j) + nep_del3) !eccentric anomaly in radians
+         !Calculate the eccentric anomaly in radians
+         nep_E_val(j+1) = (nep_E_val(j) + nep_del3) 
 
-         plu_E_val(j+1) = (plu_E_val(j) + plu_del3) !eccentric anomaly in radians         
+         plu_E_val(j+1) = (plu_E_val(j) + plu_del3)        
       end do
 
       nep_E_new = nep_E_val(11)
