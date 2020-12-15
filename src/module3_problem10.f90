@@ -267,10 +267,10 @@ program module3_problem10
       !Write new positions and velocities in original coordinate frame
       if (mod(t, 10000.0_P) == 0) then
          write(*,*) "Time = ", t
-         write(21,fmt) t, nep_r_drift(1), nep_r_drift(2), nep_r_drift(3), nep_v_kick(1), &
-            nep_v_kick(2), nep_v_kick(3)
-         write(22,fmt) t, plu_r_drift(1), plu_r_drift(2), plu_r_drift(3), plu_v_kick(1), &
-            plu_v_kick(2), plu_v_kick(3)
+         write(21,fmt) t, nep_r_drift(1), nep_r_drift(2), nep_r_drift(3), vh_nep(1), &
+            vh_nep(2), vh_nep(3)
+         write(22,fmt) t, plu_r_drift(1), plu_r_drift(2), plu_r_drift(3), vh_plu(1), &
+            vh_plu(2), vh_plu(3)
       end if
 
       nep_old(1:3) = nep_r_drift(:)
