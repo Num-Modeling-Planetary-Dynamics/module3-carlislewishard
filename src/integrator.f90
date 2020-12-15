@@ -8,7 +8,7 @@ real(P), parameter                         :: m_sun = 1.0_P
 real(P), parameter                         :: m_nep = 0.00005149_P
 real(P), parameter                         :: m_plu = 6.58086572E-9_P  
 real(P), parameter                         :: dt = 0.008_P      
-real(P), parameter                         :: tmax = 100000.0_P !5.22_P !100000.0_P
+real(P), parameter                         :: tmax = 35.17_P !100000.0_P
 character(len=*), parameter                :: fmt = '(ES23.16,10(",",ES23.16,:))'
 
 contains 
@@ -72,7 +72,6 @@ contains
       if ((E0 + PI) > (2.0_P * PI)) then
          E0 = E0 - PI
       end if 
-      !write(*,*) 'ORBEL', a, e, n, M, E0
 
       return
    end subroutine xv2E0
@@ -93,8 +92,13 @@ contains
       implicit none
       real(P), dimension(6), intent(inout) :: pl1, pl2
       real(P), dimension(3)                :: acc_sys
+      real(P)                              :: r, rx, ry, rz
       
-      acc_sys(:) = (G * m_nep * m_plu) / ((m_nep + m_plu) * (pl1(1:3) - pl2(1:3))**2)
+      rx = pl1(1) - pl2(1)
+      ry = pl1(2) - pl2(2)
+      rz = pl1(3) - pl2(3)
+      r = sqrt(rx**2 + ry**2 + rz**2)
+      acc_sys(:) = (G * m_nep * m_plu) / ((m_nep + m_plu) * r**2)
       pl1(4:6) = pl1(4:6) + (acc_sys(:) * dt)
       pl2(4:6) = pl2(4:6) + (acc_sys(:) * dt)
       return
@@ -123,6 +127,9 @@ contains
          !Calculate the eccentric anomaly in radians
          E_val(j+1) = (E_val(j) + del3) 
       end do
+
+      write(*,*) "ORBEL", a, e, M, E0
+
       !Calculate the new positions
       pl(1) = a * (cos(E_val(11)) - e)
       pl(2) = a * sqrt(1.0_P - e**2.0_P) * sin(E_val(11))
@@ -195,57 +202,66 @@ program neptune_pluto
    t = 0.0_P 
 
    dt_max = int(tmax / dt) 
-   !if (mod(t, 10000.0_P) == 0) then
-      write(*,*) '#1', nep(:)
-   !end if
 
    do i = 1, dt_max
 
       t = i * dt
       t_half = 0.5_P * t
 
+      !if (mod(t, 10000.0_P) == 0) then
+         write(*,*) '#1 NEP', nep(:)
+         !write(*,*) '#1 PLU', plu(:)
+      !end if
+
       call sun_drift(nep, plu)
 
       !if (mod(t, 10000.0_P) == 0) then
-         !write(*,*) '#2', nep(:)
+         write(*,*) '#2 NEP', nep(:)
+         !write(*,*) '#2 PLU', plu(:)
       !end if
 
       call pl_kick(nep, plu)
 
       !if (mod(t, 10000.0_P) == 0) then
-         !write(*,*) '#3', nep(:)
+         write(*,*) '#3 NEP', nep(:)
+         !write(*,*) '#3 PLU', plu(:)
       !end if
 
       call xv2E0(nep, t, nep_a, nep_e, nep_n, nep_M, nep_E0)
       call xv2E0(plu, t, plu_a, plu_e, plu_n, plu_M, plu_E0)
 
       !if (mod(t, 10000.0_P) == 0) then
-         !write(*,*) '#4', nep(:)
+         write(*,*) '#4 NEP', nep(:)
+         !write(*,*) '#4 PLU', plu(:)
       !end if
 
       call pl_drift(nep, nep_a, nep_e, nep_M, nep_E0)
       call pl_drift(plu, plu_a, plu_e, plu_M, plu_E0)
 
       !if (mod(t, 10000.0_P) == 0) then
-         !write(*,*) '#5', nep(:)
+         write(*,*) '#5 NEP', nep(:)
+         !write(*,*) '#5 PLU', plu(:)
       !end if
 
       call pl_kick(nep, plu)
 
       !if (mod(t, 10000.0_P) == 0) then
-         !write(*,*) '#6', nep(:)
+         write(*,*) '#6 NEP', nep(:)
+         !write(*,*) '#6 PLU', plu(:)
       !end if
 
       call sun_drift(nep, plu)
 
       !if (mod(t, 10000.0_P) == 0) then
-         !write(*,*) '#7', nep(:)
+         write(*,*) '#7 NEP', nep(:)
+         !write(*,*) '#7 PLU', plu(:)
       !end if
 
       call bary2helio(nep, plu, vh_out)
 
       !if (mod(t, 10000.0_P) == 0) then
-         !write(*,*) '#8', nep(:)
+         write(*,*) '#8 NEP', nep(:)
+         !write(*,*) '#8 PLU', plu(:)
       !end if
 
       !Write new positions and velocities in original coordinate frame
@@ -256,7 +272,8 @@ program neptune_pluto
       end if
 
       !if (mod(t, 10000.0_P) == 0) then
-         !write(*,*) '#9', nep(:)
+         write(*,*) '#9 NEP', nep(:)
+         !write(*,*) '#9 PLU', plu(:)
       !end if
 
    end do
